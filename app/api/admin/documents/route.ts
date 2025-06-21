@@ -5,6 +5,9 @@ import { requireRole } from "@/lib/middleware"
 async function getDocuments(req: NextRequest, context: any) {
   try {
     const supabase = createServerClient()
+    if (!supabase) {
+      return NextResponse.json({ error: "Supabase not configured" }, { status: 500 })
+    }
 
     const { data: documents, error } = await supabase
       .from("documents")

@@ -339,9 +339,17 @@ export default function CustomerDashboard() {
                   <div className="space-y-2 flex flex-col justify-end">
                     <button
                       type="submit"
-                      className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-colors duration-200"
+                      className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-colors duration-200 flex items-center justify-center"
+                      disabled={uploadLoading}
                     >
-                      Upload
+                      {uploadLoading ? (
+                        <>
+                          <Upload className="h-5 w-5 mr-2 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        "Upload"
+                      )}
                     </button>
                   </div>
                 </div>

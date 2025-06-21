@@ -245,7 +245,7 @@ export default function DocumentsPage() {
                                       <iframe
                                         src={selectedDocument.file_url}
                                         width="100%"
-                                        height="500px"
+                                        height="200px"
                                         style={{ border: "1px solid #ccc", borderRadius: "4px" }}
                                         title="Document Preview"
                                       />
