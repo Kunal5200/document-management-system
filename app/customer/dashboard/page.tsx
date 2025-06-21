@@ -46,6 +46,7 @@ import {
   Plus,
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
+import { toast } from "react-toastify";
 
 interface Document {
   id: string;
@@ -119,8 +120,6 @@ export default function CustomerDashboard() {
       return;
     }
 
-    setUploadLoading(true);
-
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
@@ -132,9 +131,12 @@ export default function CustomerDashboard() {
       });
 
       if (response.ok) {
-        fetchDocuments();
+        toast.success("Document uploaded successfully");
         setSelectedFile(null);
         setSelectedDocumentType("");
+        fetchDocuments();
+      } else {
+        toast.error("Failed to save document in database.");
       }
     } catch (error) {
       console.error("Failed to upload document:", error);
@@ -258,7 +260,9 @@ export default function CustomerDashboard() {
           {/* Upload Document Section */}
           <Card className="mb-8 shadow-lg border border-gray-200">
             <CardHeader className="bg-gray-50 rounded-t-lg border-b border-gray-200">
-              <CardTitle className="text-xl font-semibold text-gray-800">Upload New Document</CardTitle>
+              <CardTitle className="text-xl font-semibold text-gray-800">
+                Upload New Document
+              </CardTitle>
               <CardDescription className="text-gray-600">
                 Select a document type and upload your file for review
               </CardDescription>
@@ -269,6 +273,7 @@ export default function CustomerDashboard() {
                   e.preventDefault();
                   if (!selectedFile || !selectedDocumentType) return;
                   // 1. Upload to Supabase Storage
+
                   const filePath = `${Date.now()}-${selectedFile.name}`;
                   const { error: uploadError } = await supabase.storage
                     .from("uploads")
@@ -287,6 +292,7 @@ export default function CustomerDashboard() {
                     return;
                   }
                   // 3. Send to your backend to save in DB
+                  setUploadLoading(true);
                   const response = await fetch("/api/customer/documents", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -299,16 +305,25 @@ export default function CustomerDashboard() {
                     }),
                   });
                   if (response.ok) {
-                    alert("Document uploaded successfully!");
-                    // Optionally refresh the document list or reset form
+                    toast.success("Document uploaded successfully");
+                    setSelectedFile(null);
+                    setSelectedDocumentType("");
+                    fetchDocuments();
+                    setUploadLoading(false);
                   } else {
-                    alert("Failed to save document in database.");
+                    toast.error("Failed to save document in database.");
+                    setUploadLoading(false);
                   }
                 }}
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end bg-gray-50 p-6 rounded-lg border border-gray-100">
                   <div className="space-y-2">
-                    <Label htmlFor="document-type" className="text-gray-700 font-medium">Document Type</Label>
+                    <Label
+                      htmlFor="document-type"
+                      className="text-gray-700 font-medium"
+                    >
+                      Document Type
+                    </Label>
                     <Select
                       value={selectedDocumentType}
                       onValueChange={setSelectedDocumentType}
@@ -318,7 +333,11 @@ export default function CustomerDashboard() {
                       </SelectTrigger>
                       <SelectContent>
                         {DOCUMENT_TYPES.map((type) => (
-                          <SelectItem key={type} value={type} className="capitalize">
+                          <SelectItem
+                            key={type}
+                            value={type}
+                            className="capitalize"
+                          >
                             {type}
                           </SelectItem>
                         ))}
@@ -326,12 +345,19 @@ export default function CustomerDashboard() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="file-upload" className="text-gray-700 font-medium">File</Label>
+                    <Label
+                      htmlFor="file-upload"
+                      className="text-gray-700 font-medium"
+                    >
+                      File
+                    </Label>
                     <input
                       id="file-upload"
                       type="file"
                       accept="image/*,application/pdf"
-                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                      onChange={(e) =>
+                        setSelectedFile(e.target.files?.[0] || null)
+                      }
                       required
                       className="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -344,7 +370,7 @@ export default function CustomerDashboard() {
                     >
                       {uploadLoading ? (
                         <>
-                          <Upload className="h-5 w-5 mr-2 animate-spin" />
+                          {/* <Upload className="h-5 w-5 mr-2 animate-spin" /> */}
                           Uploading...
                         </>
                       ) : (
@@ -468,22 +494,33 @@ export default function CustomerDashboard() {
                                 <div className="border rounded-lg p-4 bg-gray-50">
                                   <div className="flex items-center space-x-2 mb-2">
                                     <FileText className="h-4 w-4" />
-                                    <span className="font-medium">Document Preview</span>
+                                    <span className="font-medium">
+                                      Document Preview
+                                    </span>
                                   </div>
-                                  <p className="text-sm text-gray-600">File: {document.file_name}</p>
+                                  <p className="text-sm text-gray-600">
+                                    File: {document.file_name}
+                                  </p>
                                   {document.file_url.endsWith(".pdf") ? (
                                     <iframe
                                       src={document.file_url}
                                       width="100%"
                                       height="400px"
-                                      style={{ border: "1px solid #ccc", borderRadius: "4px" }}
+                                      style={{
+                                        border: "1px solid #ccc",
+                                        borderRadius: "4px",
+                                      }}
                                       title="Document Preview"
                                     />
                                   ) : (
                                     <img
                                       src={document.file_url}
                                       alt={document.file_name}
-                                      style={{ maxWidth: "100%", maxHeight: "300px", borderRadius: "4px" }}
+                                      style={{
+                                        maxWidth: "100%",
+                                        maxHeight: "300px",
+                                        borderRadius: "4px",
+                                      }}
                                     />
                                   )}
                                 </div>
